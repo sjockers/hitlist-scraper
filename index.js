@@ -4,11 +4,7 @@ const moment = require('moment')
 
 const BASE_URL = 'https://www.offiziellecharts.de/charts/single/for-date-'
 const OUTPUT_DIR = './output/'
-
-const date = moment('1992-11-30')
-
-// Promise interface
-scrapeIt(BASE_URL + date.valueOf(), {
+const SCHEMA = {
   chartEntries: {
     listItem: '.chart-table tr',
     data: {
@@ -17,9 +13,20 @@ scrapeIt(BASE_URL + date.valueOf(), {
       title: '.info-title'
     }
   }
-}).then(page => {
-  writeOutput(page, date.format('YYYY-MM-DD'))
-})
+}
+
+const FROM_DATE = moment('1992-11-30')
+const TO_DATE = moment('1992-12-24')
+
+function scrape(fromDate, toDate) {
+  scrapeIt(BASE_URL + fromDate.valueOf(), SCHEMA).then(page => {
+    writeOutput(page, fromDate.format('YYYY-MM-DD'))
+    let nextDate = fromDate.add({days: 7})
+    if (nextDate.isBefore(toDate)) {
+      scrape(nextDate, toDate)
+    }
+  })
+}
 
 function writeOutput(data, isoDate) {
   console.log('Writing charts for ' + isoDate)
@@ -30,3 +37,5 @@ function writeOutput(data, isoDate) {
   file.write(JSON.stringify(data, null, 2))
   file.end()
 }
+
+scrape(FROM_DATE, TO_DATE)
