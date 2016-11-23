@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "moment": "^2.16.0",
-    "scrape-it": "^3.2.2"
+    "scrape-it": "^3.2.2",
+    "yargs": "^6.4.0"
   }
 }

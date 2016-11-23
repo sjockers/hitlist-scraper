@@ -1,6 +1,9 @@
+#!/usr/bin/env node
+
 const fs = require('fs')
 const scrapeIt = require('scrape-it')
 const moment = require('moment')
+const argv = require('yargs').argv;
 
 const BASE_URL = 'https://www.offiziellecharts.de/charts/single/for-date-'
 const OUTPUT_DIR = './output/'
@@ -15,21 +18,21 @@ const SCHEMA = {
   }
 }
 
-const FROM_DATE = moment('1992-11-30')
-const TO_DATE = moment('1992-12-24')
+const fromDate = moment(argv.from) || moment()
+const toDate = moment(argv.to) || moment()
 
 function scrape(fromDate, toDate) {
   scrapeIt(BASE_URL + fromDate.valueOf(), SCHEMA).then(page => {
     writeOutput(page, fromDate.format('YYYY-MM-DD'))
     let nextDate = fromDate.add({days: 7})
-    if (nextDate.isBefore(toDate)) {
+    if (nextDate <= toDate) {
       scrape(nextDate, toDate)
     }
   })
 }
 
 function writeOutput(data, isoDate) {
-  console.log('Writing charts for ' + isoDate)
+  console.log('Writing output for ' + isoDate)
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR)
   }
@@ -38,4 +41,4 @@ function writeOutput(data, isoDate) {
   file.end()
 }
 
-scrape(FROM_DATE, TO_DATE)
+scrape(fromDate, toDate)
